@@ -21,7 +21,7 @@ tensorboard = "*"
 tqdm = "*"
 
 # pytorch (for my old cuda environment)
-torch = "==1.12.1"
+torch = "==1.13.1"
 torchvision = ">=0.5.0"
 
 [tool.poetry.dev-dependencies]
