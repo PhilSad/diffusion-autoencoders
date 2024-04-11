@@ -189,6 +189,8 @@ class CelebAHQ(CelebA):
             target = None
 
         return x, target.long()
+    
+
 
 
 def get_dataset(name, split, transform=None):
@@ -217,6 +219,14 @@ def get_dataset(name, split, transform=None):
             root='./datasets/',
             split=split,
             target_type='attr',
+            transform=transform,
+            download=True,
+        )
+    
+    elif name == 'hdtf':
+        dataset = HDTF(
+            root='./datasets/',
+            split=split,
             transform=transform,
             download=True,
         )
@@ -275,3 +285,38 @@ def load_image_pillow(image_path):
     with Image.open(image_path) as img:
         image = img.convert('RGB')
     return image
+
+
+import glob
+class HDTF(Dataset):
+    """HDTF dataset.
+    """
+    def __init__(self, root, split='train', transform=None, download=False):
+        super().__init__()
+        self.root = root
+        self.split = split
+        self.transform = transform
+
+        self.data = self._load_data()
+        
+    def _load_data(self):
+        train_test_split = 0.8
+        data_root = "/workspace/diffusion-autoencoders/diffdub_data/specified_formats/videos/frames_xf"
+        paths = glob.glob(os.path.join(data_root, "**/*.png"))
+        idx_cutoff = int(len(paths) * train_test_split)
+        train_paths = paths[:idx_cutoff]
+        test_paths = paths[idx_cutoff:]
+        self.dataset = {
+            "train": train_paths,
+            "test": test_paths
+        }
+    
+    def __len__(self):
+        return len(self.dataset[self.split])
+    
+    def __getitem__(self, index):
+        image_path = self.dataset[self.split][index]
+        image = load_image_pillow(image_path)
+        if self.transform:
+            image = self.transform(image)
+        return image, 0
